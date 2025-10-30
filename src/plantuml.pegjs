@@ -74,6 +74,16 @@ DiagramName
 UML
   = elements:UMLElement*
   {
+
+    // Extraia nomes de atores para uso em ElementReference
+    const actorNames = elements
+      .filter(e => e instanceof types.Actor)
+      .map(e => e.name);
+    
+    // Armazene no contexto para uso em ElementReference
+    options.context = options.context || {};
+    options.context.actorNames = actorNames;
+
     return new types.UML(
       removeUndefined(elements)
     );
@@ -91,6 +101,7 @@ UMLElement
  / Enum
  / Component
  / UseCase
+ / Actor
  / Stdlib_C4_Context
  / Stdlib_C4_Container_Component
  / Stdlib_C4_Boundary
@@ -453,12 +464,129 @@ ShortUseCase
   }
 
 //
+// Actor
+//
+
+Actor
+  = _ "actor"i _ name:ElementName _ "as"i _ alias:Name _ stereotypes:Stereotypes? EndLine
+  {
+    return new types.Actor(
+      alias,
+      name.title,
+      stereotypes
+    );
+  }
+  / _ "actor"i _ name:Name _ "as"i _ alias:Name _ stereotypes:Stereotypes? EndLine
+  {
+    return new types.Actor(
+      alias,
+      name,
+      stereotypes
+    );
+  }
+  / _ "system"i _ name:Name _ ":" _ title:QuotedString _ stereotypes:Stereotypes? EndLine
+  {
+    return new types.Actor(
+      name,
+      title,
+      stereotypes
+    );
+  }
+  / _ "system"i _ name:Name _ "as"i _ alias:Name _ stereotypes:Stereotypes? EndLine
+  {
+    return new types.Actor(
+      alias,
+      name,
+      stereotypes
+    );
+  }
+  / _ "actor"i _ name:ElementName _ stereotypes:Stereotypes? EndLine
+  {
+    return new types.Actor(
+      name.name,
+      name.title,
+      stereotypes
+    );
+  }
+  / _ "system"i _ name:ElementName _ stereotypes:Stereotypes? EndLine
+  {
+    return new types.Actor(
+      name.name,
+      name.title,
+      stereotypes
+    );
+  }
+  / _ element:ShortActor EndLine
+  {
+    return new types.Actor(
+      element.name,
+      element.title
+    );
+  }
+
+// Implementação do ShortActor
+ShortActor
+  = ":" title:(!(":" / NewLine) .)+ ":" _ "as"i _ name:Name
+  {
+    return {
+      name: name,
+      title: extractText(title),
+    };
+  }
+  / ":" name:(!(":" / NewLine) .)+ ":"
+  {
+    name = extractText(name);
+    return {
+      name: name,
+      title: name,
+    };
+  }
+
+//
 // Relationship
 //
 
 Relationship
   = _ left:ElementReference _ leftCardinality:QuotedString? _ leftArrowHead:RelationshipArrowHead? leftArrowBody:RelationshipArrowBody hidden:RelationshipHidden? Direction? rightArrowBody:RelationshipArrowBody rightArrowHead:RelationshipArrowHead? _ rightCardinality:QuotedString? _ right:ElementReference _ label:(RelationshipLabel)? EndLine
   {
+
+    leftArrowHead = leftArrowHead ?? '';
+    rightArrowHead = rightArrowHead ?? '';
+    leftArrowBody = leftArrowBody ?? '';
+    rightArrowBody = rightArrowBody ?? '';
+
+    // Corrige traços simples
+    if (leftArrowBody === '-') leftArrowBody = '--';
+    if (rightArrowBody === '-') rightArrowBody = '--';
+
+    let relationshipType = 'unknown';
+
+    // Lógica de classificação baseada em cabeças e corpos das setas
+    if ((leftArrowHead === '' && rightArrowHead === '|>') || 
+        (leftArrowHead === '<|' && rightArrowHead === '')) {
+      relationshipType = 'generalization';
+    } else if ((leftArrowHead === '<' && rightArrowHead === '>')) {
+      relationshipType = 'bidirectional';
+    } else if ((leftArrowHead === '' && rightArrowHead === '>') ||
+              (leftArrowHead === '<' && rightArrowHead === '')) {
+      relationshipType = 'association';
+    } else if ((leftArrowHead === 'o' || rightArrowHead === 'o') &&
+              (leftArrowBody === '--' || rightArrowBody === '--')) {
+      relationshipType = 'aggregation';
+    } else if ((leftArrowHead === '*' || rightArrowHead === '*') &&
+              (leftArrowBody === '--' || rightArrowBody === '--')) {
+      relationshipType = 'composition';
+    } else if ((leftArrowHead === '<|' || rightArrowHead === '|>') &&
+              (leftArrowBody === '..' || rightArrowBody === '..')) {
+      relationshipType = 'realization';
+    } else if ((leftArrowHead === '' && rightArrowHead === '>') &&
+              (leftArrowBody === '..' || rightArrowBody === '..')) {
+      relationshipType = 'dependency';
+    } else if ((leftArrowHead === '<' && rightArrowHead === '>') &&
+              (leftArrowBody === '..' || rightArrowBody === '..')) {
+      relationshipType = 'dependency';
+    }
+
     return new types.Relationship(
       left.name,
       right.name,
@@ -472,10 +600,39 @@ Relationship
       rightCardinality,
       label,
       !!hidden,
+      relationshipType
     );
   }
   / _ left:ElementReference _ leftCardinality:QuotedString? _ leftArrowHead:RelationshipArrowHead? arrowBody:RelationshipArrowBody rightArrowHead:RelationshipArrowHead? _ rightCardinality:QuotedString? _ right:ElementReference _ label:(RelationshipLabel)? EndLine
   {
+
+    let relationshipType = 'unknow';
+
+    // Normalização segura
+    arrowBody = arrowBody ?? '';
+    leftArrowHead = leftArrowHead ?? '';
+    rightArrowHead = rightArrowHead ?? '';
+
+    if (arrowBody === '-') arrowBody = '--';
+
+    if ((arrowBody === '--') && (rightArrowHead === '|>' || leftArrowHead === '<|')) {
+      relationshipType = 'generalization';
+    } else if (arrowBody === '..' && (rightArrowHead === '|>' || leftArrowHead === '<|')) {
+      relationshipType = 'realization';
+    } else if (arrowBody === '--' && leftArrowHead === '' && rightArrowHead === '>') {
+      relationshipType = 'association';
+    } else if (arrowBody === '--' && leftArrowHead === '<' && rightArrowHead === '>') {
+      relationshipType = 'association';
+    } else if (arrowBody === '..' && leftArrowHead === '' && rightArrowHead === '>') {
+      relationshipType = 'dependency';
+    } else if (arrowBody === '..' && leftArrowHead === '<' && rightArrowHead === '>') {
+      relationshipType = 'dependency';
+    } else if (arrowBody === '--' && (leftArrowHead === 'o' || rightArrowHead === 'o')) {
+      relationshipType = 'aggregation';
+    } else if (arrowBody === '--' && (leftArrowHead === '*' || rightArrowHead === '*')) {
+      relationshipType = 'composition';
+    }
+
     return new types.Relationship(
       left.name,
       right.name,
@@ -489,6 +646,7 @@ Relationship
       rightCardinality,
       label,
       false,
+      relationshipType,
     );
   }
 
@@ -603,6 +761,13 @@ ElementReference
     return {
       name: element.name,
       type: 'UseCase',
+    };
+  }
+  / element:ShortActor
+  {
+    return {
+      name: element.name,
+      type: 'Actor',
     };
   }
   / name:Name
@@ -922,3 +1087,4 @@ Stdlib_C4_Rel
       techn.name,
     );
   }
+

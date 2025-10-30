@@ -1,5 +1,5 @@
 export class Comment {
-  constructor (
+  constructor(
     public comment: string,
   ) {
     this.comment = comment || '';
@@ -7,7 +7,7 @@ export class Comment {
 }
 
 export class Note {
-  constructor (
+  constructor(
     public text: string,
     public of: string = '',
   ) {
@@ -17,7 +17,7 @@ export class Note {
 }
 
 export class Component {
-  constructor (
+  constructor(
     public name: string,
     public title: string,
   ) {
@@ -25,7 +25,7 @@ export class Component {
 }
 
 export class UseCase {
-  constructor (
+  constructor(
     public name: string,
     public title: string,
   ) {
@@ -34,7 +34,7 @@ export class UseCase {
 
 export type Accessor = ('-' | '#' | '~' | '+')
 export class Method {
-  constructor (
+  constructor(
     public name: string,
     public isStatic: boolean,
     public accessor: Accessor,
@@ -49,7 +49,7 @@ export class Method {
 }
 
 export class MemberVariable {
-  constructor (
+  constructor(
     public name: string,
     public isStatic: boolean,
     public accessor: Accessor,
@@ -63,7 +63,7 @@ export class MemberVariable {
 
 export type Member = (Method | MemberVariable)
 export class Enum {
-  constructor (
+  constructor(
     public name: string,
     public title: string,
     public members: Member[] = [],
@@ -81,7 +81,7 @@ export class Enum {
 }
 
 export class Interface {
-  constructor (
+  constructor(
     public name: string,
     public title: string,
     public members: Member[] = [],
@@ -99,7 +99,7 @@ export class Interface {
 }
 
 export class Class {
-  constructor (
+  constructor(
     public name: string,
     public title: string,
     public isAbstract: boolean,
@@ -118,9 +118,9 @@ export class Class {
   }
 }
 
-export type GroupType = ('package' | 'namespace' | 'node' | 'folder' | 'frame' | 'cloud' | 'database' | 'rectangle' )
+export type GroupType = ('package' | 'namespace' | 'node' | 'folder' | 'frame' | 'cloud' | 'database' | 'rectangle')
 export class Group {
-  constructor (
+  constructor(
     public name: string,
     public title: string,
     public type: GroupType,
@@ -152,7 +152,7 @@ export type RelationshipArrowBody = (
   | '.'
 );
 export class Relationship {
-  constructor (
+  constructor(
     public left: string,
     public right: string,
     public leftType: string,
@@ -165,6 +165,7 @@ export class Relationship {
     public rightCardinality: string,
     public label: string,
     public hidden: boolean,
+    public relationshipType: string = '',
   ) {
     this.leftType = leftType || '';
     this.rightType = rightType || '';
@@ -176,12 +177,13 @@ export class Relationship {
     this.rightCardinality = rightCardinality || '';
     this.label = label || '';
     this.hidden = !!hidden;
+    this.relationshipType = relationshipType || '';
   }
 }
 
 export type Stdlib_C4_Context_Type = ('Person' | 'Person_Ext' | 'System' | 'System_Ext' | 'SystemDb' | 'SystemQueue' | 'SystemDb_Ext' | 'SystemQueue_Ext');
 export class Stdlib_C4_Context {
-  constructor (
+  constructor(
     public type_: { source: string, name: Stdlib_C4_Context_Type },
     public alias: string,
     public label: string,
@@ -199,7 +201,7 @@ export class Stdlib_C4_Context {
 
 export type Stdlib_C4_Container_Component_Type = ('ContainerQueue_Ext' | 'ContainerQueue' | 'ContainerDb_Ext' | 'ContainerDb' | 'Container_Ext' | 'Container' | 'ComponentQueue_Ext' | 'ComponentQueue' | 'ComponentDb_Ext' | 'ComponentDb' | 'Component_Ext' | 'Component');
 export class Stdlib_C4_Container_Component {
-  constructor (
+  constructor(
     public type_: { source: string, name: Stdlib_C4_Container_Component_Type },
     public alias: string,
     public label: string,
@@ -219,7 +221,7 @@ export class Stdlib_C4_Container_Component {
 
 export type Stdlib_C4_Boundary_Type = ('Boundary' | 'Enterprise_Boundary' | 'System_Boundary' | 'Container_Boundary');
 export class Stdlib_C4_Boundary {
-  constructor (
+  constructor(
     public type_: { source: string, name: Stdlib_C4_Boundary_Type },
     public alias: string,
     public label: string,
@@ -234,7 +236,7 @@ export class Stdlib_C4_Boundary {
 
 export type Stdlib_C4_Dynamic_Rel_Type = ('Rel' | 'BiRel' | 'Rel_Back' | 'Rel_Neighbor' | 'BiRel_Neighbor' | 'Rel_Back_Neighbor' | 'Rel_D' | 'Rel_Down' | 'BiRel_D' | 'BiRel_Down' | 'Rel_U' | 'Rel_Up' | 'BiRel_U' | 'BiRel_Up' | 'Rel_L' | 'Rel_Left' | 'BiRel_L' | 'BiRel_Left' | 'Rel_R' | 'Rel_Right' | 'BiRel_R' | 'BiRel_Right');
 export class Stdlib_C4_Dynamic_Rel {
-  constructor (
+  constructor(
     public type_: { source: string, name: Stdlib_C4_Dynamic_Rel_Type },
     public from: string,
     public to: string,
@@ -255,7 +257,7 @@ export class Stdlib_C4_Dynamic_Rel {
 
 export type Stdlib_C4_Deployment_Type = ('Deployment_Node' | 'Deployment_Node_L' | 'Deployment_Node_R' | 'Node_L' | 'Node_R' | 'Node');
 export class Stdlib_C4_Deployment {
-  constructor (
+  constructor(
     public type_: { source: string, name: Stdlib_C4_Deployment_Type },
     public alias: string,
     public label: string,
@@ -274,7 +276,7 @@ export class Stdlib_C4_Deployment {
 }
 
 export class Stdlib_C4_Rel {
-  constructor (
+  constructor(
     public type_: { source: string, name: string },
     public alias1: string,
     public alias2: string,
@@ -286,10 +288,22 @@ export class Stdlib_C4_Rel {
   }
 }
 
+export class Actor {
+  constructor(
+    public name: string,
+    public title: string,
+    public stereotype: string = '',
+  ) {
+    this.stereotype = stereotype || '';
+  }
+}
+
+
 export type UMLElement = (
   | Note
   | Component
   | UseCase
+  | Actor
   | Enum
   | Interface
   | Class
@@ -303,16 +317,17 @@ export type UMLElement = (
   | Stdlib_C4_Rel
 );
 export class UML {
-  constructor (
+  constructor(
     public elements: UMLElement[],
   ) { }
 }
 
 export class File {
-  constructor (
+  constructor(
     public name: string,
     public diagrams: UML[],
   ) {
     this.diagrams = diagrams || [];
   }
 }
+

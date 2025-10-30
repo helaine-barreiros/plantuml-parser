@@ -3,6 +3,8 @@ export * from './types';
 
 import defaultFormatter from './formatters/default';
 import graphFormatter from './formatters/graph';
+import structuredFormatter from './formatters/structured';
+import useCaseStructuredFormatter from './formatters/usecase_structured';
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 //TODO : use import here
@@ -122,9 +124,13 @@ type Formatter = (parseResult: (types.File | types.UML[])) => any;
 type Formatters = {
   default: Formatter;
   graph: Formatter;
+  structured: Formatter;
+  usecase_structured: Formatter;
 }
 
 export const formatters: Formatters = {
   default: defaultFormatter,
   graph: graphFormatter,
+  structured: structuredFormatter,
+  usecase_structured: useCaseStructuredFormatter
 };

@@ -1,15 +1,15 @@
-import { File, UML, Component, MemberVariable, Interface, Class, Relationship } from '../types';
+import { File, UML, Component, MemberVariable, Interface, Class, Relationship, Actor } from '../types';
 
 /**
  * TODO: make this propertly typed
  */
 
-export default function graphFormatter (parseResult: (File | UML[])): string {
+export default function graphFormatter(parseResult: (File | UML[])): string {
   const nodes: any[] = [];
   const edges: any[] = [];
 
   let fileName = '';
-  function linkToFile (node: any) {
+  function linkToFile(node: any) {
     if (fileName) {
       edges.push({
         from: fileName,
@@ -20,7 +20,7 @@ export default function graphFormatter (parseResult: (File | UML[])): string {
     }
   }
 
-  (function extractNodes (node: any) {
+  (function extractNodes(node: any) {
     if (node instanceof File) {
       fileName = node.name;
 
@@ -87,6 +87,19 @@ export default function graphFormatter (parseResult: (File | UML[])): string {
       });
 
       linkToFile(node);
+
+    } else if (node instanceof Actor) {
+      nodes.push({
+        ...node,
+        id: node.name,
+        type: node.constructor.name,
+        title: node.title,
+        stereotype: node.stereotype,
+        hidden: true,
+      });
+
+      linkToFile(node);
+
     } else if (node instanceof Object) {
       Object.keys(node).map(
         (k) => extractNodes(node[k]),
@@ -94,8 +107,8 @@ export default function graphFormatter (parseResult: (File | UML[])): string {
     }
   })(parseResult);
 
-  (function extractEdges (node: any) {
-    function getNodeByName (nodeName: string) {
+  (function extractEdges(node: any) {
+    function getNodeByName(nodeName: string) {
       return nodes.filter(
         (n) => n.name === nodeName,
       )[0];
@@ -108,7 +121,21 @@ export default function graphFormatter (parseResult: (File | UML[])): string {
         return;
       }
 
+
       if (
+        (leftNode.type === 'Actor' && rightNode.type === 'UseCase') ||
+        (leftNode.type === 'UseCase' && rightNode.type === 'Actor')
+      ) {
+        // Adiciona a relação entre atores e casos de uso
+        edges.push({
+          from: node.left,
+          to: node.right,
+          name: node.label || 'uses',
+          leftType: leftNode.type,
+          rightType: rightNode.type,
+          hidden: node.hidden,
+        });
+      } else if (
         (
           leftNode.type === 'Class' && rightNode.type === 'Class'
         ) || (
