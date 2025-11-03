@@ -5,6 +5,7 @@ import defaultFormatter from './formatters/default';
 import graphFormatter from './formatters/graph';
 import structuredFormatter from './formatters/structured';
 import useCaseStructuredFormatter from './formatters/usecase_structured';
+import sequenceStructuredFormatter from './formatters/sequence_structured';
 import classStructuredFormatter from './formatters/class_structured';
 
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -128,6 +129,7 @@ type Formatters = {
   structured: Formatter;
   usecase_structured: Formatter;
   class_structured: Formatter;
+  sequence_structured: Formatter;
 }
 
 export const formatters: Formatters = {
@@ -135,5 +137,6 @@ export const formatters: Formatters = {
   graph: graphFormatter,
   structured: structuredFormatter,
   usecase_structured: useCaseStructuredFormatter,
-  class_structured: classStructuredFormatter
+  class_structured: classStructuredFormatter,
+  sequence_structured: sequenceStructuredFormatter
 };
