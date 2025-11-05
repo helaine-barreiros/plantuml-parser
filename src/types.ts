@@ -298,6 +298,75 @@ export class Actor {
   }
 }
 
+//
+// Activity Diagram Types
+//
+
+export class Activity {
+  constructor(
+    public name: string,
+    public description: string,
+    public style: Record<string, any> = {},
+  ) {
+    this.name = name || '';
+    this.description = description || '';
+    this.style = style || {};
+  }
+}
+
+export type ActivityMarkerType = ('start' | 'stop' | 'end');
+export class ActivityMarker {
+  constructor(
+    public type: ActivityMarkerType,
+  ) {
+    this.type = type || 'start';
+  }
+}
+
+export class ActivityDecision {
+  constructor(
+    public condition: string,
+    public trueBlock: UMLElement[] = [],
+    public falseBlock: UMLElement[] = [],
+  ) {
+    this.condition = condition || '';
+    this.trueBlock = trueBlock || [];
+    this.falseBlock = falseBlock || [];
+  }
+}
+
+export type ActivityLoopType = ('while' | 'repeat' | 'loop');
+export class ActivityLoop {
+  constructor(
+    public type: ActivityLoopType,
+    public condition: string,
+    public body: UMLElement[] = [],
+  ) {
+    this.type = type || 'while';
+    this.condition = condition || '';
+    this.body = body || [];
+  }
+}
+
+export class ActivityParallel {
+  constructor(
+    public branches: UMLElement[][] = [],
+  ) {
+    this.branches = branches || [];
+  }
+}
+
+export class ActivityPartition {
+  constructor(
+    public name: string,
+    public elements: UMLElement[] = [],
+    public color: string = '',
+  ) {
+    this.name = name || '';
+    this.elements = elements || [];
+    this.color = color || '';
+  }
+}
 
 export type UMLElement = (
   | Note
@@ -309,6 +378,12 @@ export type UMLElement = (
   | Class
   | Group
   | Relationship
+  | Activity
+  | ActivityMarker
+  | ActivityDecision
+  | ActivityLoop
+  | ActivityParallel
+  | ActivityPartition
   | Stdlib_C4_Context
   | Stdlib_C4_Container_Component
   | Stdlib_C4_Boundary

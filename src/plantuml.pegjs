@@ -102,6 +102,11 @@ UMLElement
  / Component
  / UseCase
  / Actor
+ / ActivityParallel
+ / ActivityDecision
+ / ActivityLoop
+ / ActivityMarker
+ / Activity
  / Stdlib_C4_Context
  / Stdlib_C4_Container_Component
  / Stdlib_C4_Boundary
@@ -540,6 +545,81 @@ ShortActor
       name: name,
       title: name,
     };
+  }
+
+//
+// Activity Diagram Elements
+//
+
+// Activity Markers (start, stop, end)
+ActivityMarker
+  = _ "start"i EndLine
+  {
+    return new types.ActivityMarker('start');
+  }
+  / _ "stop"i EndLine
+  {
+    return new types.ActivityMarker('stop');
+  }
+  / _ "end"i EndLine
+  {
+    return new types.ActivityMarker('end');
+  }
+
+// Activity Action (:texto;)
+Activity
+  = _ ":" description:(!(";" / NewLine) .)+ ";" EndLine
+  {
+    const desc = extractText(description);
+    // Gera um nome único baseado na descrição
+    const name = desc.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
+    return new types.Activity(name, desc, {});
+  }
+
+// Activity Parallel (fork...fork again...end fork)
+ActivityParallel
+  = _ "fork"i _ NewLine firstBranch:(!((_ "fork"i _ "again"i) / (_ "end"i _ "fork"i) / (_ "@enduml")) UMLElement)* branches:(_ "fork"i _ "again"i _ NewLine body:(!((_ "fork"i _ "again"i) / (_ "end"i _ "fork"i) / (_ "@enduml")) UMLElement)* { return body; })* _ "end"i _ "fork"i EndLine
+  {
+    const firstBody = firstBranch.map(item => item[1]);
+    const allBranches = [removeUndefined(firstBody)];
+    
+    branches.forEach(branch => {
+      const branchBody = branch.map(item => item[1]);
+      allBranches.push(removeUndefined(branchBody));
+    });
+    
+    return new types.ActivityParallel(allBranches);
+  }
+
+// Activity Decisions (if...then...else...endif)
+ActivityDecision
+  = _ "if"i _ "(" condition:(!(")" / NewLine) .)+ ")" _ "then"i _ "(" thenLabel:(!(")" / NewLine) .)+ ")" _ NewLine trueBlock:(!((_ "else"i) / (_ "endif"i) / (_ "@enduml")) UMLElement)* _ "else"i _ "(" elseLabel:(!(")" / NewLine) .)+ ")" _ NewLine falseBlock:(!((_ "endif"i) / (_ "@enduml")) UMLElement)* _ "endif"i EndLine
+  {
+    const cond = extractText(condition);
+    const trueBody = trueBlock.map(item => item[1]);
+    const falseBody = falseBlock.map(item => item[1]);
+    return new types.ActivityDecision(cond, removeUndefined(trueBody), removeUndefined(falseBody));
+  }
+  / _ "if"i _ "(" condition:(!(")" / NewLine) .)+ ")" _ "then"i _ "(" thenLabel:(!(")" / NewLine) .)+ ")" _ NewLine trueBlock:(!((_ "endif"i) / (_ "@enduml")) UMLElement)* _ "endif"i EndLine
+  {
+    const cond = extractText(condition);
+    const trueBody = trueBlock.map(item => item[1]);
+    return new types.ActivityDecision(cond, removeUndefined(trueBody), []);
+  }
+
+// Activity Loops (repeat...repeat while, while...endwhile)
+ActivityLoop
+  = _ "repeat"i _ NewLine body:(!((_ "repeat"i _ "while"i) / (_ "@enduml")) UMLElement)* _ "repeat"i _ "while"i _ "(" condition:(!(")" / NewLine) .)+ ")" EndLine
+  {
+    const cond = extractText(condition);
+    const loopBody = body.map(item => item[1]);
+    return new types.ActivityLoop('repeat', cond, removeUndefined(loopBody));
+  }
+  / _ "while"i _ "(" condition:(!(")" / NewLine) .)+ ")" _ NewLine body:(!((_ "endwhile"i) / (_ "@enduml")) UMLElement)* _ "endwhile"i EndLine
+  {
+    const cond = extractText(condition);
+    const loopBody = body.map(item => item[1]);
+    return new types.ActivityLoop('while', cond, removeUndefined(loopBody));
   }
 
 //
