@@ -6,7 +6,7 @@ import graphFormatter from './formatters/graph';
 import structuredFormatter from './formatters/structured';
 import useCaseStructuredFormatter from './formatters/usecase_structured';
 import sequenceStructuredFormatter from './formatters/sequence_structured';
-import classStructuredFormatter from './formatters/class_structured';
+import activityStructuredFormatter from './formatters/activity_structured';
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 //TODO : use import here
@@ -128,8 +128,8 @@ type Formatters = {
   graph: Formatter;
   structured: Formatter;
   usecase_structured: Formatter;
-  class_structured: Formatter;
   sequence_structured: Formatter;
+  activity_structured: Formatter;
 }
 
 export const formatters: Formatters = {
@@ -137,6 +137,6 @@ export const formatters: Formatters = {
   graph: graphFormatter,
   structured: structuredFormatter,
   usecase_structured: useCaseStructuredFormatter,
-  class_structured: classStructuredFormatter,
-  sequence_structured: sequenceStructuredFormatter
+  sequence_structured: sequenceStructuredFormatter,
+  activity_structured: activityStructuredFormatter
 };
