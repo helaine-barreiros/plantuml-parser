@@ -14,7 +14,10 @@ tokens remain external secrets managed by their respective platforms.
 
 ## Deposit preparation
 
-- [ ] Add an origin-and-modifications statement identifying base commit `966a72e`.
+- [x] Add the complete technical registration specification at
+  `docs/registro/ESPECIFICACAO_REGISTRO_PARSER.md`.
+- [x] Add an origin-and-modifications statement identifying base commit `966a72e`
+  at `docs/registro/PROVENIENCIA_E_MODIFICACOES.md`.
 - [ ] Limit the registered scope to the structured use-case extension.
 - [ ] Include source, grammar, relevant tests, package manifests and license.
 - [ ] Generate deterministic ZIP, file manifest and SHA-256.
