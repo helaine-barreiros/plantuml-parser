@@ -136,3 +136,5 @@ require('./fixtures').forEach(
     }
   },
 );
+
+require('./relationship-semantics');

@@ -41,6 +41,49 @@ function removeUndefined(array: Array<any>){
   );
 }
 
+/**
+ * Classify a relationship without changing the arrow representation emitted
+ * by the parser. RelationshipArrowBody reduces a sequence of hyphens or dots
+ * to '-' or '.', while older parser branches may normalize '-' to '--'.
+ */
+function classifyRelationship(
+  leftArrowHead: string,
+  rightArrowHead: string,
+  leftArrowBody: string,
+  rightArrowBody: string,
+){
+  const bodies = [leftArrowBody, rightArrowBody];
+  const isDotted = bodies.some(body => body === '.' || body === '..');
+  const isSolid = !isDotted && bodies.some(body => body === '-' || body === '--');
+  const hasGeneralizationHead = leftArrowHead === '<|' || rightArrowHead === '|>';
+  const hasLeftDirection = leftArrowHead === '<';
+  const hasRightDirection = rightArrowHead === '>';
+
+  if (hasGeneralizationHead && isDotted) {
+    return 'realization';
+  }
+  if (hasGeneralizationHead && isSolid) {
+    return 'generalization';
+  }
+  if (isSolid && (leftArrowHead === 'o' || rightArrowHead === 'o')) {
+    return 'aggregation';
+  }
+  if (isSolid && (leftArrowHead === '*' || rightArrowHead === '*')) {
+    return 'composition';
+  }
+  if (isDotted && (hasLeftDirection || hasRightDirection)) {
+    return 'dependency';
+  }
+  if (isSolid && hasLeftDirection && hasRightDirection) {
+    return 'bidirectional';
+  }
+  if (isSolid && (hasLeftDirection || hasRightDirection ||
+      (leftArrowHead === '' && rightArrowHead === ''))) {
+    return 'association';
+  }
+  return 'unknown';
+}
+
 }
 
 PlantUMLFile
@@ -559,33 +602,12 @@ Relationship
     if (leftArrowBody === '-') leftArrowBody = '--';
     if (rightArrowBody === '-') rightArrowBody = '--';
 
-    let relationshipType = 'unknown';
-
-    // Lógica de classificação baseada em cabeças e corpos das setas
-    if ((leftArrowHead === '' && rightArrowHead === '|>') || 
-        (leftArrowHead === '<|' && rightArrowHead === '')) {
-      relationshipType = 'generalization';
-    } else if ((leftArrowHead === '<' && rightArrowHead === '>')) {
-      relationshipType = 'bidirectional';
-    } else if ((leftArrowHead === '' && rightArrowHead === '>') ||
-              (leftArrowHead === '<' && rightArrowHead === '')) {
-      relationshipType = 'association';
-    } else if ((leftArrowHead === 'o' || rightArrowHead === 'o') &&
-              (leftArrowBody === '--' || rightArrowBody === '--')) {
-      relationshipType = 'aggregation';
-    } else if ((leftArrowHead === '*' || rightArrowHead === '*') &&
-              (leftArrowBody === '--' || rightArrowBody === '--')) {
-      relationshipType = 'composition';
-    } else if ((leftArrowHead === '<|' || rightArrowHead === '|>') &&
-              (leftArrowBody === '..' || rightArrowBody === '..')) {
-      relationshipType = 'realization';
-    } else if ((leftArrowHead === '' && rightArrowHead === '>') &&
-              (leftArrowBody === '..' || rightArrowBody === '..')) {
-      relationshipType = 'dependency';
-    } else if ((leftArrowHead === '<' && rightArrowHead === '>') &&
-              (leftArrowBody === '..' || rightArrowBody === '..')) {
-      relationshipType = 'dependency';
-    }
+    const relationshipType = classifyRelationship(
+      leftArrowHead,
+      rightArrowHead,
+      leftArrowBody,
+      rightArrowBody,
+    );
 
     return new types.Relationship(
       left.name,
@@ -606,8 +628,6 @@ Relationship
   / _ left:ElementReference _ leftCardinality:QuotedString? _ leftArrowHead:RelationshipArrowHead? arrowBody:RelationshipArrowBody rightArrowHead:RelationshipArrowHead? _ rightCardinality:QuotedString? _ right:ElementReference _ label:(RelationshipLabel)? EndLine
   {
 
-    let relationshipType = 'unknow';
-
     // Normalização segura
     arrowBody = arrowBody ?? '';
     leftArrowHead = leftArrowHead ?? '';
@@ -615,23 +635,12 @@ Relationship
 
     if (arrowBody === '-') arrowBody = '--';
 
-    if ((arrowBody === '--') && (rightArrowHead === '|>' || leftArrowHead === '<|')) {
-      relationshipType = 'generalization';
-    } else if (arrowBody === '..' && (rightArrowHead === '|>' || leftArrowHead === '<|')) {
-      relationshipType = 'realization';
-    } else if (arrowBody === '--' && leftArrowHead === '' && rightArrowHead === '>') {
-      relationshipType = 'association';
-    } else if (arrowBody === '--' && leftArrowHead === '<' && rightArrowHead === '>') {
-      relationshipType = 'association';
-    } else if (arrowBody === '..' && leftArrowHead === '' && rightArrowHead === '>') {
-      relationshipType = 'dependency';
-    } else if (arrowBody === '..' && leftArrowHead === '<' && rightArrowHead === '>') {
-      relationshipType = 'dependency';
-    } else if (arrowBody === '--' && (leftArrowHead === 'o' || rightArrowHead === 'o')) {
-      relationshipType = 'aggregation';
-    } else if (arrowBody === '--' && (leftArrowHead === '*' || rightArrowHead === '*')) {
-      relationshipType = 'composition';
-    }
+    const relationshipType = classifyRelationship(
+      leftArrowHead,
+      rightArrowHead,
+      arrowBody,
+      arrowBody,
+    );
 
     return new types.Relationship(
       left.name,
@@ -1087,4 +1096,3 @@ Stdlib_C4_Rel
       techn.name,
     );
   }
-
