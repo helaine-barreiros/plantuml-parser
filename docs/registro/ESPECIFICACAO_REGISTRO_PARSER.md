@@ -6,7 +6,7 @@
 
 **Versão candidata:** 1.0.0
 
-**Autora das modificações desta versão:** Helaine Solange Lins Barreiros
+**Autores:** Helaine Solange Lins Barreiros; Ivaldir Honório de Farias Júnior; Cleyton Mário de Oliveira Rodrigues
 
 **Obra originária:** `Enteee/plantuml-parser`
 
