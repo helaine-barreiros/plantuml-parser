@@ -1,0 +1,367 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,margin=2.5cm,headheight=15pt]{geometry}
+\usepackage{array,booktabs,longtable,tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\definecolor{upeblue}{HTML}{123B62}
+\definecolor{lightblue}{HTML}{EAF1F7}
+\definecolor{darkgray}{HTML}{3A3A3A}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=upeblue,
+  urlcolor=upeblue,
+  pdftitle={Especificação B1 - PlantUML Parser HSL},
+  pdfauthor={Helaine Solange Lins Barreiros},
+  pdfsubject={Registro de Programa de Computador}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small Especificação B1 - Parser HSL}
+\rhead{\small Registro de Programa de Computador}
+\cfoot{\small Página \thepage}
+
+\titleformat{\section}{\Large\bfseries\color{upeblue}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\color{darkgray}}{\thesubsection}{0.7em}{}
+\setlist[itemize]{leftmargin=1.5em,itemsep=2pt,topsep=4pt}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=2pt,topsep=4pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{2em}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\pending}{\textbf{PENDENTE}}
+
+\begin{document}
+\pagenumbering{gobble}
+
+\begin{titlepage}
+  \centering
+  \vspace*{1.3cm}
+  {\large\bfseries ESPECIFICAÇÃO B1\par}
+  \vspace{0.25cm}
+  {\large Registro de Programa de Computador\par}
+  \vspace{2.3cm}
+  {\Huge\bfseries\color{upeblue} PlantUML Parser HSL com Saída Estruturada para Casos de Uso\par}
+  \vspace{0.8cm}
+  {\Large Produto 4 - Versão candidata 1.0.0\par}
+  \vfill
+  \begin{tabular}{>{\bfseries}p{4.0cm}p{9.0cm}}
+    Autora das modificações & Helaine Solange Lins Barreiros \\
+    Obra originária & \code{Enteee/plantuml-parser} \\
+    Licença & Apache License 2.0 \\
+    Commit-base & \code{966a72e} \\
+    Commit funcional & \code{f317b79} \\
+    Branch & \code{codex/registro-parser-usecase-v1.0.0} \\
+    Estado & Minuta técnica completa; pacote e SHA-256 ainda não gerados \\
+  \end{tabular}
+  \vfill
+  {\large 30 de outubro de 2026\par}
+  \vspace{0.8cm}
+  \fcolorbox{upeblue}{lightblue}{\parbox{0.88\textwidth}{\small
+  O objeto é a versão derivada que acrescenta suporte estruturado a diagramas de casos de uso. O pedido não reivindica autoria ou exclusividade sobre o código preexistente. A licença, a obra originária e o escopo das modificações devem permanecer identificados.}}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\section{Introdução}
+
+\subsection{Finalidade}
+
+O programa analisa texto PlantUML e fornece uma representação estruturada, em JSON, de diagramas de casos de uso. A saída separa atores, casos de uso, pacotes, retângulos e relações, preservando atributos relevantes para processamento automatizado por outros programas.
+
+\subsection{Contexto de desenvolvimento}
+
+A extensão foi desenvolvida para apoiar a avaliação programática de diagramas UML no doutorado. O parser originário já realizava parsing de PlantUML; a versão HSL modifica e amplia essa base para reconhecer construções necessárias aos casos de uso e emitir uma saída organizada para consumo pelo motor de avaliação.
+
+\subsection{Natureza derivada}
+
+A versão conserva arquitetura, gramática e código do projeto originário Enteee/\allowbreak plantuml-parser, licenciado sob Apache-2.0, e modifica essa base. Por isso, tecnicamente é obra derivada. Essa qualificação descreve a proveniência e não impede que as modificações autorais formem um produto relacionado e um pedido próprio, desde que a origem e a licença sejam respeitadas.
+
+\section{Identificação}
+
+\begin{longtable}{>{\bfseries}p{4.1cm}p{10.0cm}}
+\toprule
+Campo & Informação \\
+\midrule
+\endhead
+Nome do programa & PlantUML Parser HSL com Saída Estruturada para Casos de Uso \\
+Nome curto & PlantUML Parser HSL - Use Case Structured \\
+Versão & v1.0.0 candidata; confirmar após o congelamento \\
+Data de criação & Pendente de validação; marco funcional no commit \code{f317b79} \\
+Data de publicação & Pendente de orientação do NIT; não inferir automaticamente do GitHub \\
+Linguagens & TypeScript, JavaScript e PEG.js \\
+Ambiente & Biblioteca Node.js e executável de linha de comando \\
+Natureza & Versão derivada de software livre, com modificações autorais identificadas \\
+Licença & Apache-2.0, preservada da obra originária \\
+\bottomrule
+\end{longtable}
+
+\section{Problema, finalidade e usuários}
+
+\subsection{Problema atendido}
+
+A árvore sintática genérica de um parser não fornece necessariamente um contrato direto para avaliação de diagramas de casos de uso. O software acrescenta reconhecimento e formatação capazes de produzir categorias explícitas e relacionamentos estruturados, reduzindo o acoplamento dos consumidores à estrutura interna da árvore de parsing.
+
+\subsection{Finalidade}
+
+\begin{itemize}
+  \item reconhecer elementos de diagramas de casos de uso em PlantUML;
+  \item representar atores e seus estereótipos;
+  \item representar casos de uso, pacotes e retângulos;
+  \item preservar a associação dos elementos aos grupos;
+  \item estruturar relações, extremidades, corpos de seta, rótulos e tipo de relação;
+  \item oferecer formatadores JSON consumíveis por ferramentas externas;
+  \item disponibilizar a variante pelo módulo e pelo executável \code{plantuml-parser-hsl}.
+\end{itemize}
+
+\subsection{Usuários-alvo}
+
+Desenvolvedores, pesquisadores e ferramentas que precisam transformar diagramas de casos de uso PlantUML em dados estruturados para validação, comparação, métricas ou integração.
+
+\section{Fronteira do produto}
+
+\subsection{Escopo incluído nesta versão}
+
+\begin{itemize}
+  \item alterações de gramática para construções utilizadas em casos de uso;
+  \item ampliação dos tipos internos para atores, casos de uso, grupos e relações;
+  \item formatadores \code{structured} e \code{usecase_structured};
+  \item integração dos formatadores à API exportada;
+  \item ajustes do formatador de grafo relacionados aos novos tipos;
+  \item configuração de compilação, manifesto NPM e lockfile compatíveis;
+  \item exemplo de diagrama e script de verificação existentes no commit da extensão.
+\end{itemize}
+
+\subsection{Escopo explicitamente excluído}
+
+\begin{itemize}
+  \item extensões posteriores para diagramas de classe, sequência ou atividade;
+  \item alterações posteriores aos commits \code{f317b79} e \code{8446cf4};
+  \item Motor de Avaliação Técnica e Estatística em Python;
+  \item resultados, diagramas e planilhas empíricas do doutorado;
+  \item \code{node_modules}, arquivos compilados, cobertura, caches e tokens;
+  \item qualquer reivindicação sobre o código originário não modificado.
+\end{itemize}
+
+\subsection{Arquivos modificados ou acrescentados desde o commit-base}
+
+O diff \code{966a72e..f317b79} identifica o núcleo da versão:
+
+\begin{itemize}
+  \item \code{src/formatters/graph.ts}: ajustes de atores e relações;
+  \item \code{src/formatters/structured.ts}: novo formatador estruturado;
+  \item \code{src/formatters/usecase_structured.ts}: formatador especializado;
+  \item \code{src/index.ts}: exportação e registro dos formatadores;
+  \item \code{src/plantuml.pegjs}: extensões da gramática;
+  \item \code{src/types.ts}: tipos para casos de uso, atores, grupos e relações;
+  \item \code{package.json}, \code{package-lock.json} e \code{tsconfig.json}: manifesto, dependências e compilação;
+  \item \code{actor_test.plantuml} e \code{test-actor.js}: entrada e verificação de apoio.
+\end{itemize}
+
+\section{Funcionalidades principais}
+
+\begin{longtable}{p{0.8cm}p{7.4cm}p{5.6cm}}
+\toprule
+ID & Funcionalidade & Evidência principal \\
+\midrule
+\endhead
+F1 & Analisar fonte PlantUML usando a gramática estendida & \code{src/plantuml.pegjs} \\
+F2 & Representar atores, casos de uso e grupos por tipos próprios & \code{src/types.ts} \\
+F3 & Extrair atores e estereótipos & \code{usecase_structured.ts} \\
+F4 & Extrair casos de uso & \code{usecase_structured.ts} \\
+F5 & Organizar elementos contidos em pacotes e retângulos & \code{usecase_structured.ts} \\
+F6 & Estruturar relações e detalhes das setas & \code{usecase_structured.ts} \\
+F7 & Inferir tipos conhecidos das extremidades das relações & \code{usecase_structured.ts} \\
+F8 & Emitir JSON organizado por categorias & formatadores estruturados \\
+F9 & Expor os novos formatadores na biblioteca & \code{src/index.ts} \\
+F10 & Disponibilizar execução pelo binário NPM & \code{package.json} \\
+\bottomrule
+\end{longtable}
+
+\section{Arquitetura e contratos}
+
+\begin{center}
+\fcolorbox{upeblue}{lightblue}{\parbox{0.91\textwidth}{\centering
+Arquivo ou texto PlantUML\\[4pt]
+$\Downarrow$\\[4pt]
+Gramática PEG.js $\longrightarrow$ objetos tipados e árvore de parsing\\[4pt]
+$\Downarrow$\\[4pt]
+Formatador \code{usecase_structured}\\[4pt]
+$\Downarrow$\\[4pt]
+JSON: atores, casos de uso, pacotes, retângulos e relações\\[4pt]
+$\Downarrow$\\[4pt]
+Programas consumidores}}
+\end{center}
+
+\subsection{Entradas}
+
+\begin{itemize}
+  \item texto PlantUML ou caminho/glob de arquivos PlantUML;
+  \item opções já suportadas pela API de parsing;
+  \item seleção do formatador de saída.
+\end{itemize}
+
+\subsection{Saídas}
+
+O JSON contém:
+
+\begin{itemize}
+  \item \code{actors}: nome, título e estereótipos;
+  \item \code{usecases}: nome e título;
+  \item \code{packages} e \code{rectangles}: identificação e elementos internos;
+  \item \code{relationships}: origem, destino, tipos conhecidos, tipo de relação, rótulo e partes das setas.
+\end{itemize}
+
+\subsection{Relação com o Produto 3}
+
+O Produto 3 chama o executável \code{plantuml-parser-hsl} por meio de um adaptador Python e consome o JSON. Essa relação é de interoperabilidade: o código TypeScript do parser permanece neste repositório e não precisa ser copiado integralmente para o pacote do Produto 3.
+
+\section{Proveniência e autoria}
+
+\subsection{Obra originária}
+
+\begin{itemize}
+  \item projeto: \code{Enteee/plantuml-parser};
+  \item repositório: \url{https://github.com/Enteee/plantuml-parser};
+  \item autor originário indicado no manifesto: Ente;
+  \item licença: Apache License 2.0;
+  \item commit-base adotado: \code{966a72e}.
+\end{itemize}
+
+\subsection{Modificações desta versão}
+
+O histórico entre \code{966a72e} e \code{f317b79} contém um commit funcional atribuído a Helaine Barreiros. A documentação de saneamento foi acrescentada no commit \code{8446cf4}. O pedido deve identificar Helaine como autora das modificações desta versão, sem substituir os créditos ou direitos sobre a obra originária.
+
+\subsection{Contribuições posteriores fora do objeto}
+
+As extensões de classes, sequências e atividades existentes em outras branches ou commits posteriores não pertencem a esta versão. Seus autores não devem ser incluídos automaticamente neste pedido, salvo decisão de ampliar a fronteira e gerar novo congelamento.
+
+\section{Originalidade e alcance dos direitos}
+
+A originalidade candidata está nas modificações da gramática e dos tipos e na implementação dos formatadores que organizam elementos de casos de uso em contrato JSON específico. O alcance do pedido deve se limitar às modificações e à seleção ou organização autoral, respeitando os direitos e avisos da base Apache-2.0.
+
+A licença autoriza uso, modificação e redistribuição sob suas condições, mas sua suficiência documental para o processo brasileiro deve ser confirmada pelo NIT. O arquivo \code{LICENSE} deve acompanhar o pacote, e avisos de copyright existentes não devem ser removidos.
+
+\section{Classificação candidata}
+
+\begin{longtable}{>{\bfseries}p{4.0cm}p{10.0cm}}
+\toprule
+Categoria & Opções candidatas \\
+\midrule
+\endhead
+Campo de aplicação & CO03 - linguagem artificial; IF02 - processamento de informação; IF10 - processamento de dados \\
+Tipo de programa & DS01 - ferramenta de suporte ao desenvolvimento; DS05 - biblioteca de rotinas; DS06 - apoio à programação; TC01 - aplicações técnico-científicas \\
+Linguagens & TypeScript, JavaScript e PEG.js \\
+Forma de apresentação & código-fonte e documentação técnica identificados por SHA-256 \\
+\bottomrule
+\end{longtable}
+
+As opções são propostas técnicas e devem ser confirmadas nas tabelas vigentes do INPI e pelo NIT.
+
+\section{Privacidade e configuração externa}
+
+A auditoria da branch não identificou CPF, telefone, endereço pessoal, caminho local, chave privada ou valor de serviço privado no código desta versão. Referências a \code{secrets} em workflows representam nomes de segredos, não seus valores.
+
+\begin{itemize}
+  \item tokens NPM e GitHub devem permanecer nos mecanismos de segredo das plataformas;
+  \item \code{.env}, configurações locais e credenciais não integram o pacote;
+  \item URLs da obra originária e metadados de licença permanecem como proveniência;
+  \item o ZIP final deve ser novamente verificado antes do cálculo do hash.
+\end{itemize}
+
+\section{Pacote depositável e forma de entrega}
+
+\subsection{Conteúdo a incluir}
+
+\begin{itemize}
+  \item arquivos do núcleo listados na Seção 4.3;
+  \item arquivos necessários para compilar a gramática e o TypeScript;
+  \item \code{package.json} e lockfile;
+  \item testes e exemplos sintéticos pertinentes;
+  \item \code{LICENSE} e demais avisos aplicáveis;
+  \item README com instalação, entrada, saída e exemplo;
+  \item esta especificação e manifesto de arquivos;
+  \item relatório ou patch que documente \code{966a72e..f317b79}.
+\end{itemize}
+
+\subsection{Conteúdo a excluir}
+
+\begin{itemize}
+  \item \code{.git} e branches não pertencentes à versão;
+  \item \code{node_modules}, \code{dist}, \code{build}, cobertura e caches;
+  \item tokens, \code{.env} e configurações locais;
+  \item arquivos de classes, sequências ou atividades posteriores;
+  \item dados e resultados empíricos;
+  \item código do Produto 3 ou de outros produtos.
+\end{itemize}
+
+\subsection{Artefatos de entrega}
+
+\begin{enumerate}
+  \item commit ou tag da versão congelada;
+  \item ZIP determinístico;
+  \item manifesto de arquivos e relatório de proveniência;
+  \item SHA-256 do ZIP;
+  \item licença e avisos;
+  \item esta especificação e instruções de reconstrução;
+  \item cópia exata do ZIP em ao menos dois locais controlados.
+\end{enumerate}
+
+\section{Verificação e limitações}
+
+\begin{longtable}{p{3.4cm}p{5.3cm}p{5.3cm}}
+\toprule
+Item & Estado & Ação antes do hash \\
+\midrule
+\endhead
+Fronteira autoral & delimitada por \code{966a72e..f317b79} & gerar relatório final do diff \\
+Dados pessoais e segredos & não encontrados no snapshot auditado & repetir varredura no ZIP \\
+Dependências Node & declaradas nos manifestos & reinstalar de forma limpa \\
+Compilação e testes & não comprovados no ambiente final & executar \code{npm ci}, build e testes \\
+Exemplo de caso de uso & existe entrada de apoio & transformar em teste reproduzível \\
+Licença e proveniência & Apache-2.0 e upstream identificados & validar documentos com o NIT \\
+\bottomrule
+\end{longtable}
+
+\section{Resumo digital}
+
+\begin{longtable}{>{\bfseries}p{4.0cm}p{10.0cm}}
+\toprule
+Campo & Valor \\
+\midrule
+\endhead
+Algoritmo & SHA-256 \\
+Nome sugerido & \code{produto4-plantuml-parser-hsl-usecase-v1.0.0.zip} \\
+Resumo digital & \pending{} - gerar após manifesto, testes e congelamento \\
+Commit ou tag do pacote & \pending \\
+Custódia do arquivo & \pending{} DE DEFINIÇÃO INSTITUCIONAL \\
+\bottomrule
+\end{longtable}
+
+\section{Pendências institucionais}
+
+\begin{itemize}
+  \item confirmar autoria formal das modificações e titularidade correspondente;
+  \item confirmar como a obra originária ou seus titulares devem constar no pedido;
+  \item validar a Apache-2.0 como documento de autorização e os anexos necessários;
+  \item decidir data de criação e publicação;
+  \item confirmar classificações do INPI;
+  \item aprovar a fronteira restrita a casos de uso;
+  \item gerar o pacote final e seu SHA-256.
+\end{itemize}
+
+\end{document}

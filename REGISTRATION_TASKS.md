@@ -18,6 +18,8 @@ tokens remain external secrets managed by their respective platforms.
   `docs/registro/ESPECIFICACAO_REGISTRO_PARSER.md`.
 - [x] Add an origin-and-modifications statement identifying base commit `966a72e`
   at `docs/registro/PROVENIENCIA_E_MODIFICACOES.md`.
+- [x] Add editable LaTeX source, reproducible build command and rendered PDF at
+  `docs/registro/latex/`.
 - [ ] Limit the registered scope to the structured use-case extension.
 - [ ] Include source, grammar, relevant tests, package manifests and license.
 - [ ] Generate deterministic ZIP, file manifest and SHA-256.
